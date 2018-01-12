@@ -4,7 +4,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.jsp.*;
 
-public final class test_jsp extends org.apache.jasper.runtime.HttpJspBase
+public final class A6_jsp extends org.apache.jasper.runtime.HttpJspBase
     implements org.apache.jasper.runtime.JspSourceDependent {
 
   private static final JspFactory _jspxFactory = JspFactory.getDefaultFactory();
@@ -48,17 +48,38 @@ public final class test_jsp extends org.apache.jasper.runtime.HttpJspBase
       out.write("<html>\n");
       out.write("    <head>\n");
       out.write("        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n");
-      out.write("        <title>JSP Page</title>\n");
+      out.write("        <title>A5</title>\n");
+      out.write("         <script src=\"displayReport.js\"></script>\n");
+      out.write("         <script src=\"login.js\"></script>\n");
       out.write("    </head>\n");
       out.write("    <body>\n");
-      out.write("        <c:forEach var=\"ship\" items=\"");
-      out.write((java.lang.String) org.apache.jasper.runtime.PageContextImpl.evaluateExpression("${ships}", java.lang.String.class, (PageContext)_jspx_page_context, null));
-      out.write("\">\n");
-      out.write("            \n");
-      out.write("        <c:forEach var=\"installation\" items=\"");
-      out.write((java.lang.String) org.apache.jasper.runtime.PageContextImpl.evaluateExpression("${installations}", java.lang.String.class, (PageContext)_jspx_page_context, null));
-      out.write("\">\n");
-      out.write("    </body>\n");
+      out.write("        \n");
+      out.write("        <div id=\"header\">\n");
+      out.write("            <h1>A5</h1>\n");
+      out.write("        </div>\n");
+      out.write("        <div id=\"nav\">\n");
+      out.write("            <UL>\n");
+      out.write("                <li>User <input id=\"user\" name=\"User\" type=\"text\"> </li>\n");
+      out.write("                <li>Password <input id=\"password\" name=\"Password\" type=\"password\"></li>\n");
+      out.write("                <li><button type=\"button\" onclick=\"login()\">Login</button> </li>\n");
+      out.write("                <li>navigation</ii>\n");
+      out.write("                <li><button type=\"button\" onclick=\"loadReport()\">Report</button> </li>\n");
+      out.write("                \n");
+      out.write("                <li>\n");
+      out.write("                    <form name=\"inputform\" action=\"somewhere\" method=\"post\">\n");
+      out.write("    <input type=\"hidden\" value=\"person\" name=\"user\">\n");
+      out.write("    <input type=\"hidden\" value=\"password\" name=\"pwd\">\n");
+      out.write("    <input type=\"hidden\" value=\"place\" name=\"organization\">\n");
+      out.write("    <input type=\"hidden\" value=\"key\" name=\"requiredkey\">\n");
+      out.write("</form>\n");
+      out.write("                </li>\n");
+      out.write("            </UL>\n");
+      out.write("        </div>\n");
+      out.write("        <div id=\"report\">\n");
+      out.write("                <h1>reports</h1>\n");
+      out.write("        </div>\n");
+      out.write("        \n");
+      out.write("        </body>\n");
       out.write("</html>\n");
     } catch (Throwable t) {
       if (!(t instanceof SkipPageException)){
