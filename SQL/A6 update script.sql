@@ -1,3 +1,5 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `load_from_staging`()
+BEGIN
 
 -- set the alarm type id for all staged alarms that already exist
 
@@ -39,10 +41,6 @@ INSERT INTO ALARM_DATA (ID_INSTALLATION, ID_ALARM_FILE, ID_ALARM_TYPE, ALARM_STA
 
 DELETE FROM ALARM_STAGING; 
 
+END;
 
-
-       
-          
-          
-          
-      
+-- CALL `a6alarms`.`load_from_staging`();
