@@ -19,7 +19,7 @@ import org.json.JSONObject;
  *
  * @author shadl
  */
-@WebServlet(name = "EchoServlet", urlPatterns = {"/EchoServlet"})
+@WebServlet(name = "EchoServlet", urlPatterns = {"/EchoServlet/*"})
 public class EchoServlet extends HttpServlet {
 
     /**
@@ -41,6 +41,10 @@ public class EchoServlet extends HttpServlet {
             String value = request.getParameter(parameterName);
             result.put(parameterName, value);
         }
+        
+        result.put("getMethod", request.getMethod());
+        result.put("getPathInfo", request.getPathInfo() );
+        
         response.setContentType("application/json");
         try (PrintWriter out = response.getWriter()) {
            
