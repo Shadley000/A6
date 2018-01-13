@@ -7,11 +7,13 @@ package com.shadley000.a6.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.JSONObject;
 
 /**
  *
@@ -43,12 +45,26 @@ public class RestServlet extends HttpServlet {
         // response.setStatus(404);// not found
         // response.setStatus(415);// unsupported media type
         // response.setStatus(500);//internal server error
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("{\"key1\":\"value1\",");
-            out.println("\"key2\":\"value2\",");
-            out.println("\"key3\":\"value3\"}");
+        
+        
+         JSONObject result = new JSONObject();
+        result.put("servlettest", "dummyvalue");
+        for(Enumeration<String> e = request.getParameterNames(); e.hasMoreElements();)
+        {   String parameterName = e.nextElement();
+            String value = request.getParameter(parameterName);
+            result.put(parameterName, value);
         }
+        
+        result.put("getMethod", request.getMethod());
+        result.put("getPathInfo", request.getPathInfo() );
+        
+        response.setContentType("application/json");
+        try (PrintWriter out = response.getWriter()) {
+           
+            result.write(out);
+           // response.flushBuffer();
+        }
+        
     }
 
     @Override
