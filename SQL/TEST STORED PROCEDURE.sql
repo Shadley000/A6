@@ -1,0 +1,6 @@
+CREATE PROCEDURE `TEST_procedure` ()
+BEGIN
+
+SHOW TABLES;
+
+END
