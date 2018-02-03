@@ -1,4 +1,6 @@
-var servletURL = "A6Servlet"
+var servletURL = "A6Servlet";
+var restTestURL = "RestServlet";
+var pivotURL = "webapi/pivot";
 
 function displayLogin(data, status) {
     if (data.a6athentication == true)
@@ -61,10 +63,52 @@ function clickAlarmRate() {
     });
 }
 
+function clickTestRest() {
+
+    var data = {
+        reportname: "testrest",
+        startdate: $("#startdate").val(),
+        enddate: $("#enddate").val()
+    };
+    $.post(restTestURL, data, function (data, status) {
+
+        var text = "<h1>Test Rest</h1>";
+        text += "<TABLE>";
+        for (var key in data) {
+            var value = data[key];
+            text += "<TR><TH>" + key + "</TH><TD>" + value + "</TD></TR>";
+        }
+        text += "</TABLE>";
+        $("#div_report").html(text);
+    });
+}
+
+function clickPivot() {
+
+    var data = {
+        reportname: "pivot",
+        startdate: $("#startdate").val(),
+        enddate: $("#enddate").val()
+    };
+    $.get(pivotURL, data, function (data, status) {
+
+        var text = "<h1>Test Pivot</h1>";
+        text += "<TABLE>";
+        for (var key in data) {
+            var value = data[key];
+            text += "<TR><TH>" + key + "</TH><TD>" + value + "</TD></TR>";
+        }
+        text += "</TABLE>";
+        $("#div_report").html(text);
+    });
+}
+
 $(document).ready(function () {
     $("#button_login").click(clickLogin);
     $("#button_logout").click(clickLogout);
     $("#button_UniqueAlarms").click(clickUniqueAlarms);
     $("#button_AlarmRate").click(clickAlarmRate);
+    $("#button_TestRest").click(clickTestRest);
+    $("#button_Pivot").click(clickPivot);
 });
 
