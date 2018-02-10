@@ -5,14 +5,16 @@ var restURL = "http://localhost:51931/InstallationsREST/webapi";
 var selectedInstallationID = null;
 var installations = null;
 var alarmDefinitions = null;
-var pivotTable = null;
 var alarmHistory = null;
+var pivotTableRows = null;
+var pivotTableWidth = 0;
 
 function loadInstallations() {
     console.log("loadInstallations");
     var url = restURL + "/installations";
     alarmDefinitions = null;
-    pivotTable = null;
+    pivotTableRows = null;
+    pivotTableWidth = 0;
     history = null;
     $.get(url, function (data, status) {
         if (status === "success")
@@ -102,81 +104,96 @@ function loadPivot() {
     console.log("loadPivot");
     if (selectedInstallationID != null)
     {
-        var url = restURL + "/installations/" + selectedInstallationID + "/pivot?from=" + $("#startdate").val() + "&to=" + $("#enddate").val();
+        var url = restURL + "/installations/" + selectedInstallationID + "/pivot?from=" + $("#pivotStartDate").val() + "&to=" + $("#pivotEndDate").val();
         $.get(url, function (data, status) {
-            if (status === "success")
-            {
-                pivotTable = data;
+            if (status === "success"){
+                pivotTableWidth = 0;
+                pivotTableRows = [];
+                for (var key in data) {
+                    var alarmType = alarmDefinitions[key];
+                    var row = {
+                        system: "alarmType.system",
+                        subSystem: "alarmType.subSystem",
+                        messageType: "alarmType.messageType",
+                        alarmPriority: "alarmType.alarmPriority",
+                        tagName: "alarmType.tagName",
+                        description: "alarmType.description",
+                        histogram: []
+                    };
+                    row.system = alarmType.system;
+                    row.subSystem = alarmType.subSystem;
+                    row.messageType = alarmType.messageType;
+                    row.alarmPriority = alarmType.alarmPriority;
+                    row.tagName = alarmType.tagName;
+                    row.description = alarmType.description;
+                    row.histogram = data[key];
+                    pivotTableRows.push(row);
+                    if (row.histogram.length > pivotTableWidth)
+                        pivotTableWidth = row.histogram.length;
+                }
             } else
-            {
-                pivotTable = null;
+            {   pivotTableWidth = 0;
+                pivotTableRows = null;
                 console.log("loadPivot() failed");
             }
+            displayPivot();
         });
     } else
         console.log("loadPivot() selectedInstallationID != undefined");
 }
-function displayPivot() {
-    console.log("displayPivot");
-    var text = "<h1>Pivot</h1>";
-
-    if (pivotTable != null)
-    {
-        histogramLength = 15;
+function displayPivot(){
+    var text = "";
+    if (pivotTableRows != null) {
         text += "<TABLE>";
         text += "<TR>";
-        if (alarmDefinitions != null)
-        {
-            text += "<TH>system</TH>";
-            text += "<TH>subSystem</TH>";
-            text += "<TH>messageType</TH>";
-            text += "<TH>alarmPriority</TH>";
-            text += "<TH>tagName</TH>";
-            text += "<TH>description</TH>";
-        } else {
-            text += "<TH>Alarm ID</TH>";
-        }
-        for (col = 0; col < histogramLength; col++)
-        {
+        text += "<TH>system</TH>";
+        text += "<TH>subSystem</TH>";
+        text += "<TH>messageType</TH>";
+        text += "<TH>alarmPriority</TH>";
+        text += "<TH>tagName</TH>";
+        text += "<TH>description</TH>";
+        for (col = 0; col < pivotTableWidth; col++) {
             text += "<TH>Date " + col + "</TH>";
         }
         text += "</TR>";
 
-        for (var key in pivotTable) {
-
-            if (alarmDefinitions != null)
+        for ( i = 0;i< pivotTableRows.length;i++) {
+            var row = pivotTableRows[i];
+            text += "<TD>" + row.system + "</TD>";
+            text += "<TD>" + row.subSystem + "</TD>";
+            text += "<TD>" + row.messageType + "</TD>";
+            text += "<TD>" + row.alarmPriority + "</TD>";
+            text += "<TD>" + row.tagName + "</TD>";
+            text += "<TD>" + row.description + "</TD>";
+            var histogram = row.histogram;
+            if (histogram != null)
             {
-                var alarmType = alarmDefinitions[key];
-                if (alarmType != null) {
-                    text += "<TD>" + alarmType.system + "</TD>";
-                    text += "<TD>" + alarmType.subSystem + "</TD>";
-                    text += "<TD>" + alarmType.messageType + "</TD>";
-                    text += "<TD>" + alarmType.alarmPriority + "</TD>";
-                    text += "<TD>" + alarmType.tagName + "</TD>";
-                    text += "<TD>" + alarmType.description + "</TD>";
+                for (column = 0; column < histogram.length; column++)
+                {
+                    text += "<TD>";
+                    text += histogram[column];
+                    text += "</TD>";
                 }
-            } else
-            {
-                text += "<TR><TH>" + key + "</TH>";
-            }
-
-            var histogram = pivotTable[key];
-            for (i = 0; i < histogram.length; i++)
-            {
-                text += "<TD>";
-                if (histogram[i] > 0)
-                    text += histogram[i];
-                text += "</TD>";
             }
             text += "</TR>";
         }
         text += "</TABLE>";
-    } else
-    {
-        text += "<P>Error, no Alarm Pivot Loaded</P>";
+    } else {
+        text += "No Alarm Pivot Loaded";
     }
+    $("#alarmPivotTable").html(text);
+}
+function displayPivotPage() {
+    console.log("displayPivot");
+    var text = "<h1>Pivot</h1>";
+    text += "<ul>";
+    text += "<li >Start Date <input type='text' name='pivotStartDate' id ='pivotStartDate' value='2018-01-01' /></li>";
+    text += "<li >End Date <input type='text' name='pivotEndDate' id ='pivotEndDate' value='2018-01-31' /></li>";
+    text += "<li ><button id='button_loadAlarmPivot' >Load</button></li>";
+    text += "<li  id='alarmPivotTable'></li>";
+    
     $("#div_report").html(text);
-
+    $("#button_loadAlarmPivot").click(loadPivot);
 }
 
 function displayLogin(data, status) {
@@ -235,23 +252,16 @@ function loadAlarmHistory() {
     } else
         console.log("loadAlarmHistory() selectedInstallationID != undefined");
 }
-
-function displayAlarmHistory() {
-    console.log("displayAlarmHistory");
-    var text = "<h1>History</h1>";
-    text += "<ul>";
-    text += "<li >Start Date <input type='text' name='historyStartDate' id ='historyStartDate' value='2018-01-01' /></li>";
-    text += "<li >Time <input type='text' name='historyStartTime' id ='historyStartTime' value='00:00:00' /></li>";
-    text += "<li ><button id='button_loadHistory' >Load</button></li>";
-
-    if (alarmHistory != null){
-        text += "<li><TABLE>";
+function displayAlarmHistory(){
+    var text = "";
+    if (alarmHistory != null) {
+        text += "<TABLE>";
         text += "<TR>";
         text += "<TH>Time</TH>";
         text += "<TH>Status</TH>";
         if (alarmDefinitions != null) {
             text += "<TH>System</TH><TH>SubSystem</TH><TH>Type</TH><TH>Priority</TH><TH>TagName</TH><TH>Description</TH>";
-        } else{
+        } else {
             text += "<TH>Alarm ID</TH>";
         }
         text += "</TR>";
@@ -278,10 +288,20 @@ function displayAlarmHistory() {
                 text += "</TR>";
             }
         }
-        text += "</TABLE><li>";
+        text += "</TABLE>";
     } else {
-        text += "<li>Nothing Loaded</li>";
+        text += "Nothing Loaded";
     }
+     $("#alarmHistoryTable").html(text);
+}
+function displayAlarmHistoryPage() {
+    console.log("displayAlarmHistory");
+    var text = "<h1>History</h1>";
+    text += "<ul>";
+    text += "<li >Start Date <input type='text' name='historyStartDate' id ='historyStartDate' value='2018-01-01' /></li>";
+    text += "<li >Time <input type='text' name='historyStartTime' id ='historyStartTime' value='00:00:00' /></li>";
+    text += "<li ><button id='button_loadHistory' >Load</button></li>";
+    text += "<li id='alarmHistoryTable'>Nothing Loaded</li>";
     text += "</UL>";
     $("#div_report").html(text);
     $("#button_loadHistory").click(loadAlarmHistory);
@@ -291,18 +311,16 @@ function selectInstallation() {
     console.log("selectInstallation");
     selectedInstallationID = $("#select_installation").val();
     loadAlarmDefinitions();
-    loadPivot();
+
     $("#reportButtons").show();
 }
 
 $(document).ready(function () {
-
-
     $("#button_login").click(clickLogin);
     $("#button_logout").click(clickLogout);
     $("#button_LoadAlarmDefinitions").click(displayAlarmDefinitions);
-    $("#button_LoadPivot").click(displayPivot);
-    $("#button_AlarmHistoryPage").click(displayAlarmHistory);
+    $("#button_AlarmHistoryPage").click(displayAlarmHistoryPage);
+    $("#button_AlarmPivotPage").click(displayPivotPage);
     $("#select_installation").on("change", selectInstallation);
 });
 

@@ -25,11 +25,9 @@
             </ul>
 
             <ul id="loggedin" hidden>
-                <li >Installation <SELECT name='installation' id='select_installation'></SELECT>
-                <li >Start Date <input type='text' name="startDate" id ='startdate' value='2018-01-01' /></li>
-                <li >End Date <input type='text' name="endDate" id ='enddate' value='2018-01-31' /></li>
+                <li >Installation <SELECT name='installation' id='select_installation'></SELECT></li>
                 <DIV id='reportButtons' hidden>
-                <li ><button id='button_LoadPivot' >Pivot Table</button></li>
+                <li ><button id='button_AlarmPivotPage' >Pivot Table</button></li>
                 <li ><button id='button_AlarmHistoryPage' >Alarm History</button></li>
                 </DIV>
                 <li ><button id='button_logout' >Logout</button></li>
