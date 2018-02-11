@@ -51,6 +51,8 @@ public final class index_jsp extends org.apache.jasper.runtime.HttpJspBase
       out.write("        <link rel=\"stylesheet\" href=\"styles.css\">\n");
       out.write("        <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js\"></script>\n");
       out.write("        <script src=\"javascript/navcontrol.js\"> </script>\n");
+      out.write("        <script src=\"javascript/pivot.js\"> </script>\n");
+      out.write("        <script src=\"javascript/alarmHistory.js\"> </script>\n");
       out.write("    </head>\n");
       out.write("    <body>\n");
       out.write("\n");
@@ -64,11 +66,9 @@ public final class index_jsp extends org.apache.jasper.runtime.HttpJspBase
       out.write("            </ul>\n");
       out.write("\n");
       out.write("            <ul id=\"loggedin\" hidden>\n");
-      out.write("                <li >Installation <SELECT name='installation' id='select_installation'></SELECT>\n");
-      out.write("                <li >Start Date <input type='text' name=\"startDate\" id ='startdate' value='2018-01-01' /></li>\n");
-      out.write("                <li >End Date <input type='text' name=\"endDate\" id ='enddate' value='2018-01-31' /></li>\n");
+      out.write("                <li >Installation <SELECT name='installation' id='select_installation'></SELECT></li>\n");
       out.write("                <DIV id='reportButtons' hidden>\n");
-      out.write("                <li ><button id='button_LoadPivot' >Pivot Table</button></li>\n");
+      out.write("                <li ><button id='button_AlarmPivotPage' >Pivot Table</button></li>\n");
       out.write("                <li ><button id='button_AlarmHistoryPage' >Alarm History</button></li>\n");
       out.write("                </DIV>\n");
       out.write("                <li ><button id='button_logout' >Logout</button></li>\n");

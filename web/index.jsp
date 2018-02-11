@@ -12,6 +12,8 @@
         <link rel="stylesheet" href="styles.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="javascript/navcontrol.js"> </script>
+        <script src="javascript/pivot.js"> </script>
+        <script src="javascript/alarmHistory.js"> </script>
     </head>
     <body>
 
