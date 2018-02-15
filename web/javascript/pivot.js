@@ -2,19 +2,20 @@ var globalPivotVars = {
     restURL: "http://localhost:51931/InstallationsREST/webapi",
     tableRows: null,
     tableWidth: 0,
-    sortMethod: "category" //description, priority, messageType, count
+    sortMethod: "category", //description, priority, messageType, count
+
 };
 
 function compareRows(row1, row2) {
-    if (globalPivotVars.sortMethod == "category") {
+    if (globalPivotVars.sortMethod === "category") {
         return compareRowsCategorySort(row1, row2);
-    } else if (globalPivotVars.sortMethod == "description") {
+    } else if (globalPivotVars.sortMethod === "description") {
         return compareRowsDiscriptionSort(row1, row2);
-    } else if (globalPivotVars.sortMethod == "priority") {
+    } else if (globalPivotVars.sortMethod === "priority") {
         return compareRowsPrioritySort(row1, row2);
-    } else if (globalPivotVars.sortMethod == "messageType") {
+    } else if (globalPivotVars.sortMethod === "messageType") {
         return compareRowsMessageTypeSort(row1, row2);
-    } else if (globalPivotVars.sortMethod == "count") {
+    } else if (globalPivotVars.sortMethod === "count") {
         return compareRowsCountSort(row1, row2);
     } else
         return 0;
@@ -95,55 +96,62 @@ function changeSort(e) {
     displayPivot();
 }
 
-function calculateFilter(row){
-    if (globalPivotVars.filterMethod == "None")
-            row.showMe = true;
-        else if (globalPivotVars.filterMethod == "ACS")
-            row.showMe = (row.system == "ACS");
-        else if (globalPivotVars.filterMethod == "NoACSSDI")
-            row.showMe = (row.system != "ACS" && row.system != "SDI" && row.system != "SDI2" );
-        else if (globalPivotVars.filterMethod == "LimitCheck")
-            row.showMe = true;
+function calculateFilter(row) {
+    if (globalPivotVars.filterMethod === "None") {
+        row.showMe = true;
+    } else if (globalPivotVars.filterMethod === "ACS") {
+        row.showMe = (row.system === "ACS");
+    } else if (globalPivotVars.filterMethod === "NoACSSDI") {
+        row.showMe = (row.system !== "ACS" && row.system !== "SDI" && row.system !== "SDI2");
+    } else if (globalPivotVars.filterMethod === "LimitCheck") {
+        row.showMe = (row.subSystem === "DW1" || row.subSystem === "DW2");
+    } else if (globalPivotVars.filterMethod === "CALC") {
+        row.showMe = (row.messageType === "CALCULATED");
+    }
 }
 
 function changeFilter(e) {
     console.log("changeFilter  " + $('[name="filter"]:checked').val());
     globalPivotVars.filterMethod = $('[name="filter"]:checked').val();
-
     for (i = 0; i < globalPivotVars.tableRows.length; i++) {
         var row = globalPivotVars.tableRows[i];
-        calculateFilter(row);        
+        calculateFilter(row);
     }
     displayPivot();
 }
 
-function buildRow(alarmType, histogram) {
-    var row = {
-        system: "alarmType.system",
-        subSystem: "alarmType.subSystem",
-        messageType: "alarmType.messageType",
-        alarmPriority: "alarmType.alarmPriority",
-        tagName: "alarmType.tagName",
-        description: "alarmType.description",
+function allocateRow(system, subSystem, messageType, alarmPriority, tagName, description)
+{
+    return{
+        system: system,
+        subSystem: subSystem,
+        messageType: messageType,
+        alarmPriority: alarmPriority,
+        tagName: tagName,
+        description: description,
         histogram: [],
         total: 0,
         showMe: true
     };
-    row.system = alarmType.system;
-    row.subSystem = alarmType.subSystem;
-    row.messageType = alarmType.messageType;
-    row.alarmPriority = alarmType.alarmPriority;
-    row.tagName = alarmType.tagName;
-    row.description = alarmType.description;
-    row.histogram = histogram;
-    if (row.histogram.length > globalPivotVars.tableWidth)
-        globalPivotVars.tableWidth = row.histogram.length;
-    for (column = 0; column < row.histogram.length; column++) {
-        row.total += row.histogram[column];
-    }
-    calculateFilter(row); 
-    return row;
 }
+function buildRow(alarmType, histogram) {
+    if (alarmType == null) {
+        alert("alarmType == null");
+        return null;
+    } else {
+        var row = allocateRow(alarmType.system, alarmType.subSystem, alarmType.messageType, alarmType.alarmPriority, alarmType.tagName, alarmType.description);
+
+        row.histogram = histogram;
+        if (row.histogram.length > globalPivotVars.tableWidth)
+            globalPivotVars.tableWidth = row.histogram.length;
+        for (column = 0; column < row.histogram.length; column++) {
+            row.total += row.histogram[column];
+        }
+        calculateFilter(row);
+        return row;
+    }
+}
+
 function loadPivot() {
     console.log("loadPivot");
     if (selectedInstallationID != null) {
@@ -152,8 +160,16 @@ function loadPivot() {
             if (status === "success") {
                 globalPivotVars.tableWidth = 0;
                 globalPivotVars.tableRows = [];
+
                 for (var key in data) {
-                    globalPivotVars.tableRows.push(buildRow(alarmDefinitions[key], data[key]))
+
+                    var alarmType = alarmDefinitions[key]
+                    if (alarmType != null) {
+                        var row = buildRow(alarmType, data[key]);
+                        globalPivotVars.tableRows.push(row);
+                    } else {
+                        console.log(key + " : " + data + " unknown alarmTypeID");
+                    }
                 }
                 globalPivotVars.tableRows.sort(compareRows);
             } else {
@@ -168,7 +184,11 @@ function loadPivot() {
 }
 function displayPivot() {
     console.log("displayPivot");
-    console.log("hideSystem:" + !$('[name="hideSystem"]').is(":checked"));
+
+    var columnTotals = [];
+    for (column = 0; column < globalPivotVars.tableWidth; column++) {
+        columnTotals.push(0);
+    }
     var text = "";
     if (globalPivotVars.tableRows != null) {
         text += "<TABLE>";
@@ -189,17 +209,17 @@ function displayPivot() {
             var starttime = Date.parse($("#pivotStartDate").val());
             for (col = 0; col < globalPivotVars.tableWidth; col++) {
                 var columnTime = new Date(starttime + (col * 1000 * 60 * 60 * 24));
-                text += "<TH>" + columnTime.getFullYear() + "-" + (columnTime.getMonth() + 1) + "-" + columnTime.getDate() + "</TH>";
+                text += "<TH>" + (columnTime.getDate()) + "/" + (columnTime.getMonth() + 1) + "</TH>";
             }
         }
+
         if ($('[name="showTotal"]').is(":checked"))
             text += "<TH>Total</TH>";
         text += "</TR>";
-
         for (i = 0; i < globalPivotVars.tableRows.length; i++) {
             var row = globalPivotVars.tableRows[i];
             if (row.showMe) {
-                text += "<TR>"
+                text += "<TR>";
                 if ($('[name="showSystem"]').is(":checked"))
                     text += "<TD>" + row.system + "</TD>";
                 if ($('[name="showSubSystem"]').is(":checked"))
@@ -214,16 +234,48 @@ function displayPivot() {
                     text += "<TD>" + row.description + "</TD>";
                 var histogram = row.histogram;
                 if ($('[name="showHistogram"]').is(":checked") && histogram != null) {
+                    //if(columnTotals==null) columnTotals = histogram.slice();
                     for (column = 0; column < histogram.length; column++) {
                         text += "<TD>";
-                        text += histogram[column];
+                        if (histogram[column] > 0)
+                            text += histogram[column];
                         text += "</TD>";
+                        columnTotals[column] += histogram[column];
                     }
+
                 }
                 if ($('[name="showTotal"]').is(":checked"))
                     text += "<TH>" + row.total + "</TH>";
                 text += "</TR>";
             }
+        }
+        {
+            text += "<TR>";
+            if ($('[name="showSystem"]').is(":checked"))
+                text += "<TH></TH>";
+            if ($('[name="showSubSystem"]').is(":checked"))
+                text += "<TH></TH>";
+            if ($('[name="showMessageType"]').is(":checked"))
+                text += "<TH></TH>";
+            if ($('[name="showPriority"]').is(":checked"))
+                text += "<TH></TH>";
+            if ($('[name="showTagName"]').is(":checked"))
+                text += "<TH></TH>";
+            if ($('[name="showDescription"]').is(":checked"))
+                text += "<TH></TH>";
+            var grandTotal = 0;
+            if ($('[name="showHistogram"]').is(":checked") && columnTotals != null) {
+                for (column = 0; column < columnTotals.length; column++) {
+                    text += "<TH>";
+                    text += columnTotals[column];
+                    grandTotal+=columnTotals[column];
+                    text += "</TH>";
+                }
+            }
+            if ($('[name="showTotal"]').is(":checked"))
+                    text += "<TH>" + grandTotal + "</TH>";
+                text += "</TR>";
+            text += "</TR>";
         }
         text += "</TABLE>";
     } else {
@@ -231,22 +283,23 @@ function displayPivot() {
     }
     $("#alarmPivotTable").html(text);
 }
+
 function displayPivotPage() {
     console.log("displayPivotPage");
     var text = "<h1>Pivot</h1>";
     text += "<ul>";
     text += "<li >Start Date <input type='text' name='pivotStartDate' id ='pivotStartDate' value='2018-01-01' /></li>";
-    text += "<li >End Date <input type='text' name='pivotEndDate' id ='pivotEndDate' value='2018-01-31' /></li>";
+    text += "<li >End Date <input type='text' name='pivotEndDate' id ='pivotEndDate' value='2018-01-10' /></li>";
     text += "<li ><button id='button_loadAlarmPivot' >Load</button></li>";
-    text += "<li >"
-    text += "<input type='checkbox' name='showSystem' checked>System </input>";
+    text += "<li >";
+    text += "<input type='checkbox' name='showSystem' >System </input>";
     text += "<input type='checkbox' name='showSubSystem' checked>SubSystem </input>";
     text += "<input type='checkbox' name='showMessageType' checked>Type </input>";
     text += "<input type='checkbox' name='showPriority' checked>Priority </input>";
-    text += "<input type='checkbox' name='showTagName' checked>TagName </input>";
+    text += "<input type='checkbox' name='showTagName' >TagName </input>";
     text += "<input type='checkbox' name='showDescription' checked>Description</input>";
     text += "<input type='checkbox' name='showHistogram' checked>Histogram</input>";
-    text += "<input type='checkbox' name='showTotal' checked>Total </input>"
+    text += "<input type='checkbox' name='showTotal' checked>Total </input>";
     text += "</li>";
     text += "<li >";
     text += "<input type='radio' name='sort' value='category' checked> category</input>";
@@ -261,16 +314,13 @@ function displayPivotPage() {
     text += "<input type='radio' name='filter' value='NoACSSDI' > Exclude ACS & SDI</input>";
     text += "<input type='radio' name='filter' value='LimitCheck' > Limit Checks</input>";
     text += "<input type='radio' name='filter' value='SDI' > Interlock Override</input>";
+    text += "<input type='radio' name='filter' value='CALC' > Calculated Values</input>";
     text += "</li>";
-
     text += "<li  id='alarmPivotTable'></li>";
-
     $("#div_report").html(text);
     $("#button_loadAlarmPivot").click(loadPivot);
-
     $('[name="sort"]').on('click change', changeSort);
     $('[name="filter"]').on('click change', changeFilter);
-
     $('[name="showSystem"]').on('click change', displayPivot);
     $('[name="showSubSystem"]').on('click change', displayPivot);
     $('[name="showMessageType"]').on('click change', displayPivot);
@@ -279,9 +329,9 @@ function displayPivotPage() {
     $('[name="showDescription"]').on('click change', displayPivot);
     $('[name="showHistogram"]').on('click change', displayPivot);
     $('[name="showTotal"]').on('click change', displayPivot);
-
 }
 
 $(document).ready(function () {
     $("#button_AlarmPivotPage").click(displayPivotPage);
-});
+}
+);

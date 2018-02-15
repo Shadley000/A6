@@ -15,18 +15,29 @@ CALL ALARM_PIVOT_UPDATE("2018-01-14", 2);
 CALL ALARM_PIVOT_UPDATE("2018-01-15", 2);
 CALL ALARM_PIVOT_UPDATE("2018-01-16", 2);
 
+select distinct cast(ALARM_TIME as date) from ALARM_DATA;
 
+select distinct ALARM_DATE, count(*) from ALARM_DATA group by ALARM_DATE;
 
-select distinct ALARM_DATE, ID_INSTALLATION from ALARM_DATA;
-
+select distinct ALARM_DATE, sum(ALARM_COUNT) from ALARM_PIVOT group by ALARM_DATE;
 select sum(ALARM_COUNT) from ALARM_PIVOT;
 
 select count(*) from  ALARM_DATA;
 
 
+
 select ID, ID_ALARM_FILE, ID_ALARM_TYPE, ALARM_STATUS, ALARM_TIME  
-from ALARM_DATA 
-where ID_INSTALLATION = 2 
-and ALARM_TIME >= '2018-01-01' 
-AND ALARM_TIME < '2018-01-31' 
-ORDER BY ALARM_TIME ASC
+	from ALARM_DATA 
+	where ID_INSTALLATION = 2 
+	and ALARM_TIME >= '2018-01-01' 
+	AND ALARM_TIME < '2018-01-31' 
+	ORDER BY ALARM_TIME ASC
+
+select ID, ID_ALARM_FILE, ID_ALARM_TYPE, ALARM_STATUS, ALARM_TIME 
+	from ALARM_DATA 
+    where ID_INSTALLATION = ? 
+    and ALARM_TIME >= ? 
+    AND ALARM_TIME < ? ORDER BY ALARM_TIME ASC
+    
+    describe alarm_data;
+    
