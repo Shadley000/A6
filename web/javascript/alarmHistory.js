@@ -1,6 +1,6 @@
 var globalHistoryVars = {
     alarmHistory: null,
-    restURL: "http://localhost:51931/InstallationsREST/webapi"
+    restURL: "/installationrest/webapi"
 };
 
 function loadAlarmHistory() {

@@ -1,5 +1,5 @@
 var globalPivotVars = {
-    restURL: "http://localhost:51931/InstallationsREST/webapi",
+    restURL: "/installationrest/webapi",
     tableRows: null,
     tableWidth: 0,
     sortMethod: "category", //description, priority, messageType, count
@@ -97,14 +97,28 @@ function changeSort(e) {
 }
 
 function calculateFilter(row) {
-    if (globalPivotVars.filterMethod === "None") {
-        row.showMe = true;
-    } else if (globalPivotVars.filterMethod === "ACS") {
+    row.showMe = true;
+    if (globalPivotVars.filterMethod === "ACS") {
         row.showMe = (row.system === "ACS");
+    } else if (globalPivotVars.filterMethod === "FILTEREDACS") {
+        if (row.system === "ACS") {
+            row.showMe = true;
+            if (row.description.includes("topped") && globalPivotVars.filterMethod != "CALC")
+                row.showMe = false;
+        } else {
+            row.showMe = false;
+        }
     } else if (globalPivotVars.filterMethod === "NoACSSDI") {
         row.showMe = (row.system !== "ACS" && row.system !== "SDI" && row.system !== "SDI2");
     } else if (globalPivotVars.filterMethod === "LimitCheck") {
-        row.showMe = (row.subSystem === "DW1" || row.subSystem === "DW2");
+        row.showMe = false;
+        if (row.subSystem === "DW1" || row.subSystem === "DW2") {
+            row.showMe = (row.description.includes("Floor") || row.description.includes("Crown")) && !row.description.includes("Brakes released");
+        }
+    } else if (globalPivotVars.filterMethod === "OVERRIDE") {
+        row.showMe = (row.description.includes("verride"));
+    } else if (globalPivotVars.filterMethod === "SDI") {
+        row.showMe = (row.system == "SDI" || row.system == "SDI2");
     } else if (globalPivotVars.filterMethod === "CALC") {
         row.showMe = (row.messageType === "CALCULATED");
     }
@@ -268,13 +282,13 @@ function displayPivot() {
                 for (column = 0; column < columnTotals.length; column++) {
                     text += "<TH>";
                     text += columnTotals[column];
-                    grandTotal+=columnTotals[column];
+                    grandTotal += columnTotals[column];
                     text += "</TH>";
                 }
             }
             if ($('[name="showTotal"]').is(":checked"))
-                    text += "<TH>" + grandTotal + "</TH>";
-                text += "</TR>";
+                text += "<TH>" + grandTotal + "</TH>";
+            text += "</TR>";
             text += "</TR>";
         }
         text += "</TABLE>";
@@ -287,11 +301,28 @@ function displayPivot() {
 function displayPivotPage() {
     console.log("displayPivotPage");
     var text = "<h1>Pivot</h1>";
-    text += "<ul>";
+    text += "<ul style='list-style-type:none'>";
     text += "<li >Start Date <input type='text' name='pivotStartDate' id ='pivotStartDate' value='2018-01-01' /></li>";
     text += "<li >End Date <input type='text' name='pivotEndDate' id ='pivotEndDate' value='2018-01-10' /></li>";
     text += "<li ><button id='button_loadAlarmPivot' >Load</button></li>";
-    text += "<li >";
+    text += "<li > Sort order";
+    text += "<input type='radio' name='sort' value='category' checked> category</input>";
+    text += "<input type='radio' name='sort' value='description'> description</input>";
+    text += "<input type='radio' name='sort' value='priority'> priority</input>";
+    text += "<input type='radio' name='sort' value='messageType'> messageType</input>";
+    text += "<input type='radio' name='sort' value='count'> count</input>";
+    text += "</li>";
+    text += "<li > Filters ";
+    text += "<input type='radio' name='filter' value='None' checked> None</input>";
+    text += "<input type='radio' name='filter' value='ACS' > ACS Only</input>";
+    text += "<input type='radio' name='filter' value='FILTEREDACS' > ACS Filtered</input>";
+    text += "<input type='radio' name='filter' value='NoACSSDI' > Exclude ACS & SDI</input>";
+    text += "<input type='radio' name='filter' value='LimitCheck' > Limit Checks</input>";
+    text += "<input type='radio' name='filter' value='SDI' > SDI</input>";
+    text += "<input type='radio' name='filter' value='OVERRIDE' > Interlock Override</input>";
+    text += "<input type='radio' name='filter' value='CALC' > Calculated Values</input>";
+    text += "</li>";
+    text += "<li > Show Columns ";
     text += "<input type='checkbox' name='showSystem' >System </input>";
     text += "<input type='checkbox' name='showSubSystem' checked>SubSystem </input>";
     text += "<input type='checkbox' name='showMessageType' checked>Type </input>";
@@ -300,21 +331,6 @@ function displayPivotPage() {
     text += "<input type='checkbox' name='showDescription' checked>Description</input>";
     text += "<input type='checkbox' name='showHistogram' checked>Histogram</input>";
     text += "<input type='checkbox' name='showTotal' checked>Total </input>";
-    text += "</li>";
-    text += "<li >";
-    text += "<input type='radio' name='sort' value='category' checked> category</input>";
-    text += "<input type='radio' name='sort' value='description'> description</input>";
-    text += "<input type='radio' name='sort' value='priority'> priority</input>";
-    text += "<input type='radio' name='sort' value='messageType'> messageType</input>";
-    text += "<input type='radio' name='sort' value='count'> count</input>";
-    text += "</li>";
-    text += "<li >";
-    text += "<input type='radio' name='filter' value='None' checked> None</input>";
-    text += "<input type='radio' name='filter' value='ACS' > ACS Only</input>";
-    text += "<input type='radio' name='filter' value='NoACSSDI' > Exclude ACS & SDI</input>";
-    text += "<input type='radio' name='filter' value='LimitCheck' > Limit Checks</input>";
-    text += "<input type='radio' name='filter' value='SDI' > Interlock Override</input>";
-    text += "<input type='radio' name='filter' value='CALC' > Calculated Values</input>";
     text += "</li>";
     text += "<li  id='alarmPivotTable'></li>";
     $("#div_report").html(text);

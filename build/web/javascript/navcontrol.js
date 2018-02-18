@@ -1,5 +1,5 @@
 var servletURL = "A6Servlet";
-var restURL = "http://localhost:51931/InstallationsREST/webapi";
+var restURL = "/installationrest/webapi";
 
 //global data
 var selectedInstallationID = null;

@@ -20,13 +20,13 @@
         <div id="div_header"><h1>A6 Alarm Manager</h1>
         </div>
         <div id="div_nav"><h2>Navigation</h2>
-            <ul id="loggedout">
+            <ul id="loggedout"  style='list-style-type:none'>
                 <li >User <input type='text' id ='user' value='guest' /></li>
                 <li >Password<input type='password' id ='password' value='password' /></li>
                 <li ><button id='button_login'>Login</button></li>
             </ul>
 
-            <ul id="loggedin" hidden>
+            <ul id="loggedin" hidden  style='list-style-type:none'>
                 <li >Installation <SELECT name='installation' id='select_installation'></SELECT></li>
                 <DIV id='reportButtons' hidden>
                 <li ><button id='button_AlarmPivotPage' >Pivot Table</button></li>

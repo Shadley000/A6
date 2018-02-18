@@ -41,3 +41,14 @@ select ID, ID_ALARM_FILE, ID_ALARM_TYPE, ALARM_STATUS, ALARM_TIME
     
     describe alarm_data;
     
+select distinct alarm_date from alarm_data
+select * from alarm_type where ID = 0;
+select * from alarm_pivot where ID_ALARM_TYPE = 0;
+
+CALL `a6alarms`.`LOAD_FROM_STAGING`();
+
+
+SELECT distinct ID_ALARM_TYPE
+ FROM ALARM_PIVOT 
+ WHERE ID_INSTALLATION = 2 AND ALARM_DATE >= '2018-01-01' AND ALARM_DATE < '2018-01-10' AND ALARM_COUNT >0
+ order by ID_ALARM_TYPE;
