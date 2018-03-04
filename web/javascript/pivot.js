@@ -3,7 +3,6 @@ var globalPivotVars = {
     tableRows: null,
     tableWidth: 0,
     sortMethod: "category", //description, priority, messageType, count
-
 };
 
 function compareRows(row1, row2) {
